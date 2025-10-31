@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Product List</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #3a3f4a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            border-bottom: 2px solid #61afef;
+            padding-bottom: 10px;
+            color: white;
+        }
+        .loading, .error {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #e06c75;
+        }
+        .product-list {
+            list-style: none;
+            padding: 0;
+        }
+        .product-item {
+            background-color: #282c34;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            border-left: 4px solid #98c379;
+        }
+        .product-name {
+            font-weight: bold;
+            color: white;
+        }
+        .product-price {
+            color: #98c379;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // 1. Define our React component
+        function App() {
+            // 2. Set up state for products, loading, and errors
+            const [products, setProducts] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
+            const [error, setError] = React.useState(null);
+
+            // 3. Use React.useEffect to fetch data when the component mounts
+            React.useEffect(() => {
+                // We define an async function to use await
+                async function fetchProducts() {
+                    try {
+                        // Use Axios to make a GET request to our API
+                        // We use a relative path, which works with ByteXL's preview
+                        const response = await axios.get('/api/products');
+                        
+                        // Success! Save the data
+                        setProducts(response.data);
+                        setError(null);
+                    } catch (err) {
+                        // Handle errors
+                        setError(err.message);
+                    } finally {
+                        // Always stop loading, whether success or error
+                        setLoading(false);
+                    }
+                }
+
+                // Call the function
+                fetchProducts();
+            }, []); // The empty array [] means this runs only once on mount
+
+            // 4. Render the UI based on the state
+            
+            // Show loading message
+            if (loading) {
+                return <div className="container"><div className="loading">Loading products...</div></div>;
+            }
+
+            // Show error message
+            if (error) {
+                return <div className="container"><div className="error">Error: {error}</div></div>;
+            }
+
+            // Show product list (success)
+            return (
+                <div className="container">
+                    <h1>Available Products</h1>
+                    <ul className="product-list">
+                        {products.map((product) => (
+                            <li key={product.id} className="product-item">
+                                <span className="product-name">{product.name}</span>
+                                <span className="product-price">${product.price}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+
+        // 5. Render our <App> component into the <div id="root">
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
